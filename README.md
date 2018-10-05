@@ -6,11 +6,15 @@
 
 Reactive [Datascript](https://github.com/tonsky/datascript/) queries through [Reagent's](https://github.com/reagent-project/reagent) track mechanism
 
-## Usage
+## Example
+
+Just use reagent as you normally would. The only difference is in
+how you fetch the data. Use Datascript queries and pull patterns :)
 
 ```clojure
 (ns example.core
-  (:require [datascript.core :as data]
+  (:require [reagent.core :as reagent]
+            [datascript.core :as data]
             [hiposfer.rata.core :as rata]))
 
 ;; WARNING: dont do this at home
@@ -29,6 +33,9 @@ Reactive [Datascript](https://github.com/tonsky/datascript/) queries through [Re
        ^{:key i}
        [:div "hello " i])]))
 
+
+(reagent/render-component [hello-world]
+                          (. js/document (getElementById "app")))
 ```
 
 
