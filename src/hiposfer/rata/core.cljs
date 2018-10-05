@@ -75,7 +75,8 @@
   (r/track! q* query (::rtx/ratom @state/conn) inputs))
 
 (defn db
-  "return the Datascript Database instance that rework currently uses.
+  "return the Datascript Database instance.
+
   The returned version is immutable, therefore you cannot use
   datascript/transact!.
 
