@@ -14,17 +14,20 @@ Reactive [Datascript](https://github.com/tonsky/datascript/) queries through [Re
             [hiposfer.rata.core :as rata]))
 
 ;; WARNING: dont do this at home
-(rata/init! (data/create-conn {:user/input {:db.unique :db.unique/identity}}))
+(defonce foo (rata/init! (data/create-conn {:user/input {:db.unique :db.unique/identity}})))
 
-(defn my-component
+(defn hello-world
   []
-  (let [click-count @(rata/q! [])]
+  (let [click-count @(rata/q! '[:find ?count .
+                                :where [?input :user/input "click"]
+                                       [?input :click/count ?count]])]
     [:div "For each click, you get a greeting :)"
-      [:input {:type "button" :value "Click me!"
-               :on-click #(rata/transact! [{:user/input "click"
-                                            :click/count (inc click-count)}])}]
-      (for [i click-count]
-        [:div "hello "])]))
+     [:input {:type "button" :value "Click me!"
+              :on-click #(rata/transact! [{:user/input "click"
+                                           :click/count (inc click-count)}])}]
+     (for [i (range click-count)]
+       ^{:key i}
+       [:div "hello " i])]))
 
 ```
 
