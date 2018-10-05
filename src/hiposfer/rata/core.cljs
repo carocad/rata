@@ -65,14 +65,14 @@
   "same as datascript/pull but returns a ratom which will be updated
   every time that the value of conn changes"
   [selector eid]
-  (r/track! pull* (::rtx/ratom @state/conn) selector eid))
+  (r/track! pull* (::ratom @state/conn) selector eid))
 
 (defn q!
   "Returns a reagent/atom with the result of the query.
   The value of the ratom will be automatically updated whenever
   a change is detected"
   [query & inputs]
-  (r/track! q* query (::rtx/ratom @state/conn) inputs))
+  (r/track! q* query (::ratom @state/conn) inputs))
 
 (defn db
   "return the Datascript Database instance.
