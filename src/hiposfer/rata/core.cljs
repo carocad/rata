@@ -82,3 +82,11 @@
   This is meant to keep querying separate from mutations"
   []
   @state/conn)
+
+(defn transact!
+  "same as Datascript transact except that uses the connection
+  passed at init!"
+  ([tx-data]
+   (transact! tx-data nil))
+  ([tx-data tx-meta]
+   (data/transact! state/conn tx-data tx-meta)))
