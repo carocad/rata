@@ -21,19 +21,25 @@
     See https://reagent-project.github.io/news/news060-alpha.html
     for more information"
   (:require [datascript.core :as data]
-            [reagent.core :as r]
-            [hiposfer.rata.state :as state]))
+            [reagent.core :as r]))
 
-(defn- listen!
-  "registers a listener for the connection transactions. Returns a
-  reagent/ratom whose value will automatically updated on every
-  transact"
+(defn listen!
+  "registers a listener for the connection transactions. Returns
+  the conn object itself with the added listener and state holder
+
+  Subsequent usages of conn in q! and pull! will return reactive
+  atoms that will update their value whenever the Datascript value
+  changes"
   [conn]
-  (let [ratom (r/atom @conn)]
-    (data/listen! conn ::tx (fn [tx-report] (reset! ratom (:db-after tx-report))))
-    (swap! conn assoc ::ratom ratom)))
+  (when (nil? (::ratom @conn))
+    (let [ratom (r/atom @conn)] ;; initial state
+      (data/listen! conn ::tx (fn [tx-report] (reset! ratom (:db-after tx-report))))
+      ;; keep a reference to the ratom to avoid GC
+      (swap! conn assoc ::ratom ratom)))
+  ;; return the conn again to allow standard datascript usage
+  conn)
 
-(defn- unlisten!
+(defn unlisten!
   "unregisters the transaction listener previously attached with
   listen!"
   [conn]
@@ -52,42 +58,15 @@
   [ratom selector eid]
   (data/pull @ratom selector eid))
 
-(defn init!
-  "takes a Datascript conn and starts listening to its transactor for changes"
-  [conn]
-  (when (some? state/conn) ;; just in case
-    (unlisten! state/conn)
-    (unlisten! conn))
-  (set! state/conn conn)
-  (listen! state/conn))
-
 (defn pull!
   "same as datascript/pull but returns a ratom which will be updated
   every time that the value of conn changes"
-  [selector eid]
-  (r/track! pull* (::ratom @state/conn) selector eid))
+  [conn selector eid]
+  (r/track! pull* (::ratom @conn) selector eid))
 
 (defn q!
   "Returns a reagent/atom with the result of the query.
   The value of the ratom will be automatically updated whenever
   a change is detected"
-  [query & inputs]
-  (r/track! q* query (::ratom @state/conn) inputs))
-
-(defn db
-  "return the Datascript Database instance.
-
-  The returned version is immutable, therefore you cannot use
-  datascript/transact!.
-
-  This is meant to keep querying separate from mutations"
-  []
-  @state/conn)
-
-(defn transact!
-  "same as Datascript transact except that uses the connection
-  passed at init!"
-  ([tx-data]
-   (transact! tx-data nil))
-  ([tx-data tx-meta]
-   (data/transact! state/conn tx-data tx-meta)))
+  [query conn & inputs]
+  (r/track! q* query (::ratom @conn) inputs))

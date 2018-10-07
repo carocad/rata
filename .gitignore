@@ -10,3 +10,4 @@ pom.xml.asc
 .hgignore
 .hg/
 /rata.iml
+/.cljs_rhino_repl/

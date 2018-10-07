@@ -6,10 +6,11 @@
 
 Reactive [Datascript](https://github.com/tonsky/datascript/) queries through [Reagent's](https://github.com/reagent-project/reagent) track mechanism
 
-## Example
+## usage
 
-Just use reagent as you normally would. The only difference is in
-how you fetch the data. Use Datascript queries and pull patterns :)
+Rata hooks itself into the transactor of Datascript. So you just need to register
+it against Datascript's connection. From that point onwards, you should use
+`rata/q` and `rata/pull` with the **connection**
 
 ```clojure
 (ns example.core
@@ -17,22 +18,23 @@ how you fetch the data. Use Datascript queries and pull patterns :)
             [datascript.core :as data]
             [hiposfer.rata.core :as rata]))
 
-;; WARNING: dont do this at home
-(defonce foo (rata/init! (data/create-conn {:user/input {:db.unique :db.unique/identity}})))
+(defonce state (data/create-conn {:user/input {:db.unique :db.unique/identity}}))
+
+(rata/listen! state)
 
 (defn hello-world
   []
   (let [click-count @(rata/q! '[:find ?count .
                                 :where [?input :user/input "click"]
-                                       [?input :click/count ?count]])]
+                                       [?input :click/count ?count]]
+                              state)] ;; this is conn not the db as in datascript !!
     [:div "For each click, you get a greeting :)"
      [:input {:type "button" :value "Click me!"
-              :on-click #(rata/transact! [{:user/input "click"
-                                           :click/count (inc click-count)}])}]
+              :on-click #(data/transact! state [{:user/input "click"
+                                                 :click/count (inc click-count)}])}]
      (for [i (range click-count)]
        ^{:key i}
        [:div "hello " i])]))
-
 
 (reagent/render-component [hello-world]
                           (. js/document (getElementById "app")))
