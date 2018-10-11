@@ -1,8 +1,8 @@
 (defproject hiposfer/rata "0.2.0"
   :description "Reactive Datascript queries"
-  :url "https://github.com/hiposfer/hiposfer.rata"
+  :url "https://github.com/hiposfer/rata"
   :license {:name "LGPLv3"
-            :url "https://github.com/hiposfer/hiposfer.rata/blob/master/LICENSE"}
+            :url "https://github.com/hiposfer/rata/blob/master/LICENSE"}
   :dependencies [[org.clojure/clojure "1.9.0" :scope "provided"]
                  [org.clojure/clojurescript "1.9.946" :scope "provided"]
                  [reagent "0.7.0" :scope "provided"]
