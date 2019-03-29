@@ -1,4 +1,4 @@
-(defproject hiposfer/rata "0.3.0-SNAPSHOT2"
+(defproject hiposfer/rata "0.3.0"
   :description "Reactive Datascript queries"
   :url "https://github.com/hiposfer/rata"
   :license {:name "LGPLv3"
