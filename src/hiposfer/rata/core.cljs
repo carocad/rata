@@ -30,12 +30,13 @@
   middlewares is a sequence of middlewares like [f g h ...] which
   will be applied in order to each transaction"
   ([conn]
-   (listen! conn trident))
+   (listen! conn nil))
   ([conn middlewares]
    (let [ratom      (r/atom @conn) ;; initial state
-         middleware (reduce (fn [result f] (f result))
-                            trident
-                            middlewares)]
+         middleware (if (empty? middlewares) trident
+                      (reduce (fn [result f] (f result))
+                              trident
+                              middlewares))]
      (data/listen! conn ::tx (fn [tx-report] (reset! ratom (:db-after tx-report))))
      (alter-meta! conn assoc ::ratom ratom)
      (alter-meta! conn assoc ::middleware middleware)
