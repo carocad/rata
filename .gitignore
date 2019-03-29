@@ -1,4 +1,3 @@
-/target
 /classes
 /checkouts
 pom.xml
@@ -9,5 +8,19 @@ pom.xml.asc
 /.nrepl-port
 .hgignore
 .hg/
-/rata.iml
+*.iml
 /.cljs_rhino_repl/
+.idea
+
+### FIGWHEEL
+**/resources/public/js/compiled/**
+figwheel_server.log
+pom.xml
+/lib/
+/classes/
+/out/
+target
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.repl
