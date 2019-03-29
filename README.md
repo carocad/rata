@@ -4,7 +4,8 @@
 [![Clojars Project](https://img.shields.io/clojars/v/hiposfer/rata.svg)](https://clojars.org/hiposfer/rata)
 
 
-Reactive [Datascript](https://github.com/tonsky/datascript/) queries through [Reagent's](https://github.com/reagent-project/reagent) track mechanism
+State management through [Datascript](https://github.com/tonsky/datascript/)
+and [Reagent's](https://github.com/reagent-project/reagent) track mechanism
 
 ## usage
 

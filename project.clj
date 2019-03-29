@@ -1,5 +1,5 @@
 (defproject hiposfer/rata "0.3.0"
-  :description "Reactive Datascript queries"
+  :description "State management through Datascript and reagent ratoms"
   :url "https://github.com/hiposfer/rata"
   :license {:name "LGPLv3"
             :url "https://github.com/hiposfer/rata/blob/master/LICENSE"}
