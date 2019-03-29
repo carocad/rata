@@ -1,27 +1,23 @@
 (ns hiposfer.rata.core
   "A reagent reactive wrapper around Datascript's transactor
 
-  Although this is a rewrite of mpdairy/posh library it is much
-  more useful and simple. The problem with posh is that it tries
-  to do too much. It target both datomic and datascript. Therefore
-  it recreates the reagent/atom implementation internally.
+  It provides both reactive queries and pull patterns.
 
-  This bring other problems with it:
-  - all queries must be cached (but reagent is capable of doing that
-     with reagent/track)
-  - whenever the state changes, posh must figure out which query result
-    should be updated (but reagent is capable of doing that by diffing
-     the result of the queries)
-  - only the currently viewable components's queries should be executed
-     (but reagent already does that since all inactive reagent/track are
-     removed automatically)
-  - all the problems above also make posh a big library with hundreds of lines
-    (reagent.tx has barely 50 even with all datascript functionality !!)
+  Custom transactions are supported through middlewares. A
+  middleware is a function with the signature
+  (middleware) => (db transaction) => transaction
 
-    See https://reagent-project.github.io/news/news060-alpha.html
-    for more information"
+  Therefore a middleware is a high order function which returns
+  a function that will receive the current state and the current
+  transaction and returns a transaction.
+  The transaction resulting from the chain will be used instead
+  of the original one"
   (:require [datascript.core :as data]
             [reagent.core :as r]))
+
+;; (tr)ansaction (ident)ity. The most basic middleware.
+;; Returns the given transaction
+(defn- trident [_ tx] tx)
 
 (defn listen!
   "registers a listener for the connection transactions. Returns
@@ -29,22 +25,31 @@
 
   Subsequent usages of conn in q! and pull! will return reactive
   atoms that will update their value whenever the Datascript value
-  changes"
-  [conn]
-  (when (nil? (::ratom @conn))
-    (let [ratom (r/atom @conn)] ;; initial state
-      (data/listen! conn ::tx (fn [tx-report] (reset! ratom (:db-after tx-report))))
-      ;; keep a reference to the ratom to avoid GC
-      (swap! conn assoc ::ratom ratom)))
-  ;; return the conn again to allow standard datascript usage
-  conn)
+  changes
+
+  middlewares is a sequence of middlewares like [f g h ...] which
+  will be applied in order to each transaction"
+  ([conn]
+   (listen! conn trident))
+  ([conn middlewares]
+   (let [ratom      (r/atom @conn) ;; initial state
+         middleware (reduce (fn [result f] (f result))
+                            trident
+                            middlewares)]
+     (data/listen! conn ::tx (fn [tx-report] (reset! ratom (:db-after tx-report))))
+     (alter-meta! conn assoc ::ratom ratom)
+     (alter-meta! conn assoc ::middleware middleware)
+     ;; return the conn again to allow standard datascript usage
+     conn)))
+
 
 (defn unlisten!
   "unregisters the transaction listener previously attached with
   listen!"
   [conn]
   (data/unlisten! conn ::tx)
-  (swap! conn dissoc ::ratom))
+  (alter-meta! conn dissoc ::ratom)
+  (alter-meta! conn dissoc ::middleware))
 
 (defn- q*
   "same as datascript/q but takes a reagent/atom as connection.
@@ -62,11 +67,22 @@
   "same as datascript/pull but returns a ratom which will be updated
   every time that the value of conn changes"
   [conn selector eid]
-  (r/track! pull* (::ratom @conn) selector eid))
+  (r/track! pull* (::ratom (meta conn) selector eid)))
 
 (defn q!
   "Returns a reagent/atom with the result of the query.
   The value of the ratom will be automatically updated whenever
   a change is detected"
   [query conn & inputs]
-  (r/track! q* query (::ratom @conn) inputs))
+  (r/track! q* query (::ratom (meta conn) inputs)))
+
+(defn transact!
+  "same as datascript/transact! but uses the transaction from the middleware
+   chain instead of tx-data"
+  ([conn tx-data]
+   (transact! conn tx-data nil))
+  ([conn tx-data tx-meta]
+   (let [middleware (::middleware (meta conn))]
+     (data/transact! conn
+                     (middleware @conn tx-data)
+                     tx-meta))))
