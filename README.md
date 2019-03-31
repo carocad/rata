@@ -11,7 +11,7 @@ and [Reagent's](https://github.com/reagent-project/reagent) track mechanism
 
 Rata hooks itself into the transactor of Datascript. So you just need to register
 it against Datascript's connection. From that point onwards, you should use
-`rata/q` and `rata/pull` with the **connection**. Rata also provides a `transact!`
+`rata/q!` and `rata/pull!` with the **connection**. Rata also provides a `transact!`
 functions which accepts a sequence of middlewares; middlewares are useful to add
 extra capabilities like transaction logging, data based effects, etc.
 
