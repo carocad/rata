@@ -1,27 +1,9 @@
-# rata
-
-[![Build Status](https://travis-ci.com/hiposfer/rata.svg?branch=master)](https://travis-ci.com/hiposfer/rata)
-[![Clojars Project](https://img.shields.io/clojars/v/hiposfer/rata.svg)](https://clojars.org/hiposfer/rata)
-
-
-State management through [Datascript](https://github.com/tonsky/datascript/)
-and [Reagent's](https://github.com/reagent-project/reagent) track mechanism
-
-## usage
-
-Rata hooks itself into the transactor of Datascript. So you just need to register
-it against Datascript's connection. From that point onwards, you should use
-`rata/q!` and `rata/pull!` with the **connection**. Rata also provides a `transact!`
-functions which accepts a sequence of middlewares; middlewares are useful to add
-extra capabilities like transaction logging, data based effects, etc.
-
-Check the [example](example) directory for a working project
-
-```clojure
 (ns example.core
   (:require [reagent.core :as reagent :refer [atom]]
             [datascript.core :as data]
             [hiposfer.rata.core :as rata]))
+
+(enable-console-print!)
 
 (def schema {:user/input {:db.unique :db.unique/identity}})
 
@@ -54,11 +36,7 @@ Check the [example](example) directory for a working project
 (reagent/render-component [example] (. js/document (getElementById "app")))
 
 (defn on-js-reload [])
-```
+  ;; optionally touch your app-state to force rerendering depending on
+  ;; your application
+  ;; (swap! app-state update-in [:__figwheel_counter] inc)
 
-
-## License
-
-Copyright © 2018
-
-Distributed under LGPLv3
